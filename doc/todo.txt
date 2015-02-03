@@ -1,0 +1,46 @@
+[Erlang IRC Bot - Cassandra and the search for happiness]
+
+- Deadline: Sunday 01.03.2015 - First of march
+
+[Premise]
+An IRC / Twitter / Twitch-IRC (maybe) bot that makes random researches and stirs conversation to get more information.
+It first gets a word it researches, either by being given a command (just the administrator), or by making it's own research, and then does the full research on this word.
+
+In order to make a word research it parses incoming conversations in the channel it is in, saves only words between X and Y in length, and counts occurrences. If it has a word with at least Z mentions, it establishes this word as a new research topic.
+
+When the bot establishes a new research topic, it tweets this decission.
+
+The bot then proceeds with it's main task, scanning the conversation for it's topic word. Sometimes it tries to stir the conversation to that topic, to get more entries.
+If the bot finds other irc channels (#<channelname>) it tries to go there and stir the conversation there as well. It also tweets about itself moving to another channel.
+If the bot finds twitter names (@<twittername>) it scans this twitter feed for some time and maybe even tries to stir conversation with that aswell.
+
+If the bot receives Private messages (either through mentions on twitter or through the IRC channels), it logs them in a database.
+
+During it's research the bot saves information about it's outcomes and saves them in a "notebook". It creates a final readable notebook on finishing the current research, tweeting the link to it. It also sometimes randomly tweets the current link.
+
+[Features]
+
+- couchdb database connection for saving data needed for usage
+- fallback channel if no activity found
+- posibility to set up min-max wordlength, min mention count
+- bot can tweet automatically
+
+[ToDo]
+
+#1- saving configuration in file and parsing for information
+#1- properly passing information to needed module
+#1- Creating a couchdb database
+2- connecting the bot to database and (for now) just saving all messages
+2- parsing text for words by word length
+1- saving text and adding counts to database
+2- checking texts for threshold
+2- bot connecting to an irc channel
+2- bot only being in X (setting) channels at the same time
+3- bot deciding on a main new topic
+3- bot actively asking for topic information
+3- bot tweeting (https://github.com/tim/erlang-oauth)
+2- bot reading and reacting to private messages on twitter
+2- bot having timed events to randomly check for twitter messages
+3- supervising processes so they don't crash the whole bot
+- maybe some self-learning abilities (new phrases?)
+- maybe check for cleverbot-api integration
