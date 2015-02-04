@@ -6,16 +6,18 @@
 
 -define(MINWORDCOUNT, 5).
 -define(MAXWORDCOUNT, 10).
+-define(BREAKSTRING, " .,'").
 
 init(_Args) ->
+    ets:new(words,[duplicate_bag,named_table]),
     {ok, [_Args]}.
 
 
 handle_event(Msg, State) ->
-    %timer:sleep(2000+random:uniform(5000-2000)),
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, What]} ->
-            Ref:privmsg(<<"#",Channel/binary>>, [answer_me(What)]),
+            save_word_counts(binary_to_list(What)),
+            %Ref:privmsg(<<"#",Channel/binary>>, [answer_me(What)]),
             {ok, State};
         _ ->
             {ok, State}
@@ -32,8 +34,21 @@ answer_me(Msg) ->
         <<"!how">> ->
             <<"That's how ",?MINWORDCOUNT>>;
         _ ->
-            Msg
+            ok
     end.
+
+save_word_counts(Msg) ->
+    Words = [ X || X <- string:tokens(Msg, ?BREAKSTRING), string:len(X) >= ?MINWORDCOUNT, string:len(X) =< ?MAXWORDCOUNT],
+    lists:foreach(  fun(One) ->
+                        Result = ets:lookup(words, One),
+                        case Result of
+                            [] -> ets:insert(words,{One,1});
+                            _ -> [{One,LastCount}|_] = ets:lookup(words, One),
+                                 ets:delete(words, One),
+                                 ets:insert(words, {One, LastCount+1})
+                        end
+                    end, Words).
+
 
 handle_call(_Request, State) -> {ok, ok, State}.
 handle_info(_Info, State) -> {ok, State}.

@@ -30,10 +30,10 @@ During it's research the bot saves information about it's outcomes and saves the
 #1- saving configuration in file and parsing for information
 #1- properly passing information to needed module
 #1- Creating a couchdb database
-2- connecting the bot to database and (for now) just saving all messages
-2- parsing text for words by word length
-1- saving text and adding counts to database
-2- checking texts for threshold
+#2- connecting the bot to database and (for now) just saving all messages
+#2- parsing text for words by word length
+#1- saving text and adding counts to database
+#2- checking texts for threshold
 2- bot connecting to an irc channel
 2- bot only being in X (setting) channels at the same time
 3- bot deciding on a main new topic
