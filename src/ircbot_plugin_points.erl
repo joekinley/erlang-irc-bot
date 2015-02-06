@@ -14,7 +14,7 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, What]} ->
-            Answer = handle_command(binary_to_list(_Sender), binary_to_list(What)),
+            Answer = handle_command(string:to_lower(binary_to_list(_Sender)), string:to_lower(binary_to_list(What))),
             io:format("Answer: ~p~n",[Answer]),
             case Answer of
               ok -> ok;
@@ -28,9 +28,9 @@ handle_event(Msg, State) ->
 handle_command(_Sender, Msg) ->
   [Cmd|Parts] = string:tokens(Msg, " "),
   case Cmd of
-    "!points" -> show_points(_Sender);
-    "!addpoints" -> add_points(_Sender, Parts);
-    "!removepoints" -> remove_points(_Sender, Parts);
+    "!points" -> show_points(string:to_lower(_Sender));
+    "!addpoints" -> add_points(string:to_lower(_Sender), Parts);
+    "!removepoints" -> remove_points(string:to_lower(_Sender), Parts);
     _ -> ok
   end.
 
