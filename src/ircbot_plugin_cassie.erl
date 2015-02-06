@@ -6,10 +6,19 @@
 
 -define(MINWORDCOUNT, 5).
 -define(MAXWORDCOUNT, 10).
--define(BREAKSTRING, " .,'").
+-define(BREAKSTRING, " .,':!?\\/").
+-define(ADMIN, "joekinley").
+
+% word blacklist:
+% *ould
+% really
+% needs a blacklist command
+% needs a command to start searching
+% needs COMMANDS
 
 init(_Args) ->
     ets:new(words,[duplicate_bag,named_table]),
+    ets:new(settings,[set,named_table]),
     {ok, [_Args]}.
 
 
@@ -17,6 +26,11 @@ handle_event(Msg, State) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, What]} ->
             save_word_counts(binary_to_list(What)),
+            Answer = admin_command(binary_to_list(What), binary_to_list(_Sender), Ref),
+            case Answer of
+                ok -> ok;
+                _ -> Ref:privmsg(<<"#",Channel/binary>>, [Answer])
+            end,
             %Ref:privmsg(<<"#",Channel/binary>>, [answer_me(What)]),
             {ok, State};
         _ ->
@@ -36,6 +50,20 @@ answer_me(Msg) ->
         _ ->
             ok
     end.
+
+admin_command(Msg, ?ADMIN, Ref) ->
+    [Cmd|Params] = string:tokens(Msg, " "),
+    case Cmd of
+        "!channel" ->
+            [Channel|_] = Params,
+            Ref:join(Channel),
+            "Find me at "++Channel;
+        _ ->
+            ok
+    end;
+
+admin_command(_, _,_) -> ok.
+
 
 save_word_counts(Msg) ->
     Words = [ X || X <- string:tokens(Msg, ?BREAKSTRING), string:len(X) >= ?MINWORDCOUNT, string:len(X) =< ?MAXWORDCOUNT],
