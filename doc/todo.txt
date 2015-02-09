@@ -34,9 +34,9 @@ During it's research the bot saves information about it's outcomes and saves the
 #2- parsing text for words by word length
 #1- saving text and adding counts to database
 #2- checking texts for threshold
-2- bot connecting to an irc channel
-2- bot only being in X (setting) channels at the same time
-3- bot deciding on a main new topic
+#2- bot connecting to an irc channel
+#2- bot only being in X (setting) channels at the same time
+  3- bot deciding on a main new topic
 3- bot actively asking for topic information
 3- bot tweeting (https://github.com/tim/erlang-oauth)
 2- bot reading and reacting to private messages on twitter

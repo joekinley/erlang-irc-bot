@@ -8,6 +8,7 @@
 -define(MAXWORDCOUNT, 10).
 -define(BREAKSTRING, " .,':!?\\/").
 -define(ADMIN, "joekinley").
+-define(MAXCHANNELCOUNT, 3).
 
 % word blacklist:
 % *ould
@@ -31,7 +32,7 @@ handle_event(Msg, State) ->
                 ok -> ok;
                 _ -> Ref:privmsg(<<"#",Channel/binary>>, [Answer])
             end,
-            %Ref:privmsg(<<"#",Channel/binary>>, [answer_me(What)]),
+            Ref:privmsg(<<"#",Channel/binary>>, [answer_me(What)]),
             {ok, State};
         _ ->
             {ok, State}
@@ -56,7 +57,7 @@ admin_command(Msg, ?ADMIN, Ref) ->
     case Cmd of
         "!channel" ->
             [Channel|_] = Params,
-            Ref:join(Channel),
+            add_channel(Channel, Ref),
             "Find me at "++Channel;
         _ ->
             ok
@@ -77,6 +78,15 @@ save_word_counts(Msg) ->
                         end
                     end, Words).
 
+add_channel(Channel, Ref) ->
+    % first check for max number
+    [RemoveChannel|RestChannels] = ets:lookup(settings, channels),
+    CurCount = length(RestChannels),
+    if CurCount > ?MAXCHANNELCOUNT -> Ref:part(RemoveChannel)
+    end,
+    ets:delete(settings, channels),
+    ets:insert(settings, {channels, RestChannels++Channel}),
+    ok.
 
 handle_call(_Request, State) -> {ok, ok, State}.
 handle_info(_Info, State) -> {ok, State}.

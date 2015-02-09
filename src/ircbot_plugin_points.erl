@@ -7,7 +7,8 @@
 -define(ADMINS, ["thegypsyknight","joekinley"]).
 
 init(_Args) ->
-    ets:new(points,[set,named_table]),
+    %ets:new(points,[set,named_table]),
+    ets:file2tab("points.tab"),
     {ok, [_Args]}.
 
 
