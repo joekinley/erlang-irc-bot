@@ -15,7 +15,7 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, What]} ->
-            Answer = handle_command(string:to_lower(binary_to_list(_Sender)), string:to_lower(binary_to_list(What))),
+            Answer = handle_command(string:to_lower(string:to_lower(binary_to_list(_Sender))), string:to_lower(binary_to_list(What))),
             io:format("Answer: ~p~n",[Answer]),
             case Answer of
               ok -> ok;
@@ -29,9 +29,11 @@ handle_event(Msg, State) ->
 handle_command(_Sender, Msg) ->
   [Cmd|Parts] = string:tokens(Msg, " "),
   case Cmd of
-    "!points" -> show_points(string:to_lower(_Sender));
-    "!addpoints" -> add_points(string:to_lower(_Sender), Parts);
+    "!points" -> show_points(_Sender);
+    "!showpoints" -> show_points(_Sender, Parts);
+    "!addpoints" -> add_points(_Sender, Parts);
     "!removepoints" -> remove_points(string:to_lower(_Sender), Parts);
+    "!highscore" -> show_highscore();
     _ -> ok
   end.
 
@@ -39,7 +41,15 @@ show_points(_Sender) ->
   Entry = ets:lookup(points, _Sender),
   case Entry of
     [] -> _Sender++" has no points yet :(";
-    [{_Sender, Points}|_] -> string:join([_Sender,"has",integer_to_list(Points),"points"]," ");
+    [{_Sender, Points}|_] -> ets:tab2file(points, "points.tab"), string:join([_Sender,"has",integer_to_list(Points),"points"]," ");
+    _ -> ok
+  end.
+
+show_points(_Sender, _Parts) ->
+  IsAdmin = lists:member(_Sender, ?ADMINS),
+  [_Nick|_] = _Parts,
+  case IsAdmin of
+    true -> show_points(_Nick);
     _ -> ok
   end.
 
@@ -74,6 +84,18 @@ remove_points(_Sender, Parts) ->
       show_points(_Nick);
     _ -> ok
   end.
+
+show_highscore() ->
+  People = lists:sublist(lists:reverse(lists:keysort(2,ets:tab2list(points))),5),
+  format_people(People).
+
+format_person({Name, Age}) ->
+  lists:flatten(io_lib:format("(Name: ~s, Age: ~b)", [Name, Age])).
+
+format_people(People) ->
+  string:join(lists:map(fun format_person/1, People), ", ").
+
+
 
 handle_call(_Request, State) -> {ok, ok, State}.
 handle_info(_Info, State) -> {ok, State}.
