@@ -5,7 +5,7 @@
 -define(SECOND, 1000).
 -define(MINUTE, 60 * 1000).
 
--define(RECV_TIMEOUT,      3 * ?MINUTE).
+-define(RECV_TIMEOUT,     10 * ?MINUTE).
 -define(SEND_TIMEOUT,     10 * ?SECOND).
 
 -define(CONNECT_TIMEOUT,   5 * ?SECOND).  % wait for dns
