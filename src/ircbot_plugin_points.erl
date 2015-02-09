@@ -86,11 +86,11 @@ remove_points(_Sender, Parts) ->
   end.
 
 show_highscore() ->
-  People = lists:sublist(lists:reverse(lists:keysort(2,ets:tab2list(points))),5),
-  format_people(People).
+  People = lists:sublist(lists:reverse(lists:keysort(2,ets:tab2list(points))),10),
+  "Top 10: "++format_people(People).
 
 format_person({Name, Age}) ->
-  lists:flatten(io_lib:format("(Name: ~s, Age: ~b)", [Name, Age])).
+  lists:flatten(io_lib:format("~s ~b", [Name, Age])).
 
 format_people(People) ->
   string:join(lists:map(fun format_person/1, People), ", ").
