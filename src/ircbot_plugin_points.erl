@@ -117,7 +117,7 @@ format_people(People) ->
 show_help() ->
   ["!points - shows points, ",
    "!transferpoints <nick> <points> - transfers your points to <nick>, ",
-   "!highscore - shows TOP 10",
+   "!highscore - shows TOP 10, ",
    "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
