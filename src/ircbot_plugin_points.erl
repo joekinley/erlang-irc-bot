@@ -94,9 +94,10 @@ remove_points(_Sender, Parts) ->
 transfer_points(_Sender, Parts) when length(Parts) < 3 -> ok;
 transfer_points(_Sender, Parts) ->
   [_Receiver|[_Points|_]] = Parts,
+  IPoints = list_to_integer(_Points),
   case ets:lookup(points, _Sender) of
-    [{_Sender, NPoints}|_] when NPoints >= _Points -> remove_points(?SELF,[_Sender,_Points]),
-                                                    add_points(?SELF,[_Receiver,_Points]);
+    [{_Sender, NPoints}|_] when NPoints >= IPoints -> remove_points(?SELF,[_Sender,IPoints]),
+                                                      add_points(?SELF,[_Receiver,IPoints]);
     _ -> ok
   end.
 
