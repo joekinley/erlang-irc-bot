@@ -37,6 +37,7 @@ handle_command(_Sender, Msg) ->
     "!removepoints" -> remove_points(_Sender, Parts);
     "!transferpoints" -> transfer_points(_Sender, Parts);
     "!highscore" -> show_highscore();
+    "!botsnack" -> botsnack(_Sender);
     _ -> ok
   end.
 
@@ -101,6 +102,8 @@ transfer_points(_Sender, Parts) ->
     _ -> ok
   end.
 
+botsnack(_Sender) -> ["I love you ", _Sender].
+
 show_highscore() ->
   People = lists:sublist(lists:reverse(lists:keysort(2,ets:tab2list(points))),10),
   "Top 10: "++format_people(People).
@@ -114,7 +117,8 @@ format_people(People) ->
 show_help() ->
   ["!points - shows points, ",
    "!transferpoints <nick> <points> - transfers your points to <nick>, ",
-   "!highscore - shows TOP 10, "].
+   "!highscore - shows TOP 10",
+   "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
 handle_info(_Info, State) -> {ok, State}.
