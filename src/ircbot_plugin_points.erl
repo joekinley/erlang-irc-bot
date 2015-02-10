@@ -91,7 +91,7 @@ remove_points(_Sender, Parts) ->
     _ -> ok
   end.
 
-transfer_points(_Sender, Parts) when length(Parts) < 3 -> ok;
+transfer_points(_Sender, Parts) when length(Parts) < 2 -> ok;
 transfer_points(_Sender, Parts) ->
   [_Receiver|[_Points|_]] = Parts,
   IPoints = list_to_integer(_Points),
