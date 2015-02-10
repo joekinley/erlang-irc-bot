@@ -102,7 +102,7 @@ transfer_points(_Sender, Parts) ->
     _ -> ok
   end.
 
-botsnack(_Sender) -> ["I love you ", _Sender].
+botsnack(_Sender) -> ["<3 ", _Sender].
 
 show_highscore() ->
   People = lists:sublist(lists:reverse(lists:keysort(2,ets:tab2list(points))),10),
