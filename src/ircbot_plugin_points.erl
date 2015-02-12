@@ -125,12 +125,12 @@ format_people(People) ->
 
 leave_message(_, Parts) when length(Parts) < 2 -> ok;
 leave_message(Sender, Parts) ->
-  [Receiver|[Message|_]] = Parts,
+  [Receiver|Message] = Parts,
   case ets:lookup(messages,Receiver) of
     [{Receiver,Messages}|_] -> NewMessages = Messages++[Sender, ": ", string:join(Message," ")],
                                ets:delete(messages,Receiver),
                                ets:insert(messages,{Receiver,NewMessages});
-    _                       -> ets:insert(messages,{Receiver,[[Sender, ": ", string:join(Message," ")]]})
+    _                       -> ets:insert(messages,{Receiver,[Sender, ": ", string:join(Message," ")]})
   end,
   ["Left message for ",Receiver].
 
