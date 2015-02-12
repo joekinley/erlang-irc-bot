@@ -4,3 +4,8 @@
 
 [Premise]
 An IRC bot mainly used on twitch for various stuff.
+
+[ToDo]
+- !quote - for having thegypsyknight quotes
+- !quiz - for having quizzes
+- !message - for leaving messages

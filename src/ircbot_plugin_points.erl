@@ -10,19 +10,27 @@
 init(_Args) ->
     %ets:new(points,[set,named_table]),
     ets:file2tab("points.tab"),
+    ets:new(messages,[set,named_table]),
     {ok, [_Args]}.
 
 
 handle_event(Msg, State) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, What]} ->
-            Answer = handle_command(string:to_lower(string:to_lower(binary_to_list(_Sender))), string:to_lower(binary_to_list(What))),
-            io:format("Answer: ~p~n",[Answer]),
+            Answer = handle_command(string:to_lower(binary_to_list(_Sender)), string:to_lower(binary_to_list(What))),
             case Answer of
               ok -> ok;
               _ -> Ref:privmsg(<<"#",Channel/binary>>, [Answer])
             end,
             {ok, State};
+        %showmy101!showmy101@showmy101.tmi.twitch.tv JOIN #thegypsyknight
+        {in, Ref, [_Sender, _Name, <<"JOIN">>, <<"#",Channel/binary>>]} ->
+          Message = fetch_message(string:to_lower(binary_to_list(_Sender))),
+          case Message of
+            ok -> ok;
+            _ -> Ref:privmsg(<<"#",Channel/binary>>, [Message])
+          end,
+          {ok, State};
         _ ->
             {ok, State}
     end.
@@ -38,6 +46,7 @@ handle_command(_Sender, Msg) ->
     "!transferpoints" -> transfer_points(_Sender, Parts);
     "!highscore" -> show_highscore();
     "!botsnack" -> botsnack(_Sender);
+    "!leavemessage" -> leave_message(_Sender, Parts);
     _ -> ok
   end.
 
@@ -58,7 +67,7 @@ show_points(_Sender, _Parts) ->
     _ -> ok
   end.
 
-add_points(_Sender, []) -> ok;
+add_points(_Sender, Parts) when length(Parts) < 2 -> ok;
 add_points(_Sender, Parts) ->
   IsAdmin = lists:member(_Sender, ?ADMINS),
   [_Nick|[_Points|_]] = Parts,
@@ -75,7 +84,7 @@ add_points(_Sender, Parts) ->
     _ -> ok
   end.
 
-remove_points(_Sender, []) -> ok;
+remove_points(_Sender, Parts) when length(Parts) < 2 -> ok;
 remove_points(_Sender, Parts) ->
   IsAdmin = lists:member(_Sender, ?ADMINS),
   [_Nick|[_Points|_]] = Parts,
@@ -83,7 +92,7 @@ remove_points(_Sender, Parts) ->
     true ->
       Current = ets:lookup(points,_Nick),
       case Current of
-        []                         -> ets:insert(points,{_Nick, list_to_integer(_Points)});
+        []                         -> ets:insert(points,{_Nick, -list_to_integer(_Points)});
         [{_Nick, CurrentPoints}|_] -> ets:delete(points,_Nick),
                                       ets:insert(points,{_Nick, CurrentPoints-list_to_integer(_Points)});
         _                          -> ok
@@ -114,10 +123,29 @@ format_person({Name, Age}) ->
 format_people(People) ->
   string:join(lists:map(fun format_person/1, People), ", ").
 
+leave_message(_, Parts) when length(Parts) < 2 -> ok;
+leave_message(Sender, Parts) ->
+  [Receiver|[Message|_]] = Parts,
+  case ets:lookup(messages,Receiver) of
+    [{Receiver,Messages}|_] -> NewMessages = Messages++[Sender, ": ", string:join(Message," ")],
+                               ets:delete(messages,Receiver),
+                               ets:insert(messages,{Receiver,NewMessages});
+    _                       -> ets:insert(messages,{Receiver,[Message]})
+  end,
+  ["Left message for ",Receiver].
+
+fetch_message(Sender) ->
+  case ets:lookup(messages, Sender) of
+    [{Sender,Messages}|_] -> ets:delete(messages, Sender),
+                             Messages;
+    _                     -> ok
+  end.
+
 show_help() ->
   ["!points - shows points, ",
    "!transferpoints <nick> <points> - transfers your points to <nick>, ",
    "!highscore - shows TOP 10, ",
+   "!leavemessage <nick> <message> - leave a message for <nick>, ",
    "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
