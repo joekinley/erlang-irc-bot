@@ -130,7 +130,7 @@ leave_message(Sender, Parts) ->
     [{Receiver,Messages}|_] -> NewMessages = Messages++[Sender, ": ", string:join(Message," ")],
                                ets:delete(messages,Receiver),
                                ets:insert(messages,{Receiver,NewMessages});
-    _                       -> ets:insert(messages,{Receiver,[Message]})
+    _                       -> ets:insert(messages,{Receiver,[Sender, ": ", string:join(Message," ")]})
   end,
   ["Left message for ",Receiver].
 
