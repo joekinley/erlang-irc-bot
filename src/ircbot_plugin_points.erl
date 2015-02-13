@@ -187,6 +187,8 @@ show_help() ->
    "!highscore - shows TOP 10, ",
    "!leavemessage <nick> <message> - leave a message for <nick>, ",
    "!nick <part> - finds all people with <part> in their name, ",
+   "!quoteby <nick> - shows a random quote by <person>, ",
+   "!addquite <nick> <quote> - adds the quote, ",
    "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
