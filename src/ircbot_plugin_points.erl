@@ -154,7 +154,7 @@ find_nick(Parts) ->
   end.
 
 to_stringlist([]) -> [];
-to_stringlist(List) -> [{Head}|Tail] = List, Head ++ to_stringlist(Tail).
+to_stringlist(List) -> [{Head}|Tail] = List, [Head] ++ to_stringlist(Tail).
 
 show_help() ->
   ["!points - shows points, ",
