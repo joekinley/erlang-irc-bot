@@ -150,8 +150,11 @@ find_nick(Parts) ->
   Found = lists:filter(fun(Elem) -> {N} = Elem, string:str(N,Part) > 0 end, ets:tab2list(nicks)),
   case Found of
     [] -> ok;
-    _  -> string:join(Found,", ")
+    _  -> string:join(to_stringlist(Found),", ")
   end.
+
+to_stringlist([]) -> [];
+to_stringlist(List) -> [{Head}|Tail] = List, Head ++ to_stringlist(Tail).
 
 show_help() ->
   ["!points - shows points, ",
