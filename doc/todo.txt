@@ -8,4 +8,4 @@ An IRC bot mainly used on twitch for various stuff.
 [ToDo]
 - !quote - for having thegypsyknight quotes
 - !quiz - for having quizzes
-- !message - for leaving messages
+- !nicks - saves all the nicks and lets people search by parts of the nick

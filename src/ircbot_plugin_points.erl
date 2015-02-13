@@ -11,6 +11,7 @@ init(_Args) ->
     %ets:new(points,[set,named_table]),
     ets:file2tab("points.tab"),
     ets:new(messages,[set,named_table]),
+    ets:new(nicks,[set,named_table]),
     {ok, [_Args]}.
 
 
@@ -36,6 +37,7 @@ handle_event(Msg, State) ->
     end.
 
 handle_command(_Sender, Msg) ->
+  ets:insert(nicks,{_Sender}),
   [Cmd|Parts] = string:tokens(Msg, " "),
   case Cmd of
     "!help" -> show_help();
@@ -47,6 +49,7 @@ handle_command(_Sender, Msg) ->
     "!highscore" -> show_highscore();
     "!botsnack" -> botsnack(_Sender);
     "!leavemessage" -> leave_message(_Sender, Parts);
+    "!nick" -> find_nick(Parts);
     _ -> ok
   end.
 
@@ -127,7 +130,7 @@ leave_message(_, Parts) when length(Parts) < 2 -> ok;
 leave_message(Sender, Parts) ->
   [Receiver|Message] = Parts,
   case ets:lookup(messages,Receiver) of
-    [{Receiver,Messages}|_] -> NewMessages = Messages++[Sender, ": ", string:join(Message," ")],
+    [{Receiver,Messages}|_] -> NewMessages = Messages++["; ",Sender, ": ", string:join(Message," ")],
                                ets:delete(messages,Receiver),
                                ets:insert(messages,{Receiver,NewMessages});
     _                       -> ets:insert(messages,{Receiver,[Sender, ": ", string:join(Message," ")]})
@@ -139,6 +142,15 @@ fetch_message(Sender) ->
     [{Sender,Messages}|_] -> ets:delete(messages, Sender),
                              Messages;
     _                     -> ok
+  end.
+
+find_nick(Parts) when length(Parts) < 1 -> ok;
+find_nick(Parts) ->
+  [Part|_] = Parts,
+  Found = lists:filter(fun(Elem) -> string:str(Elem,Part) > 0 end, ets:tab2list(nicks)),
+  case Found of
+    [] -> ok;
+    _  -> string:join(Found,", ")
   end.
 
 show_help() ->
