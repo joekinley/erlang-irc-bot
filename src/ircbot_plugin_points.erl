@@ -147,7 +147,7 @@ fetch_message(Sender) ->
 find_nick(Parts) when length(Parts) < 1 -> ok;
 find_nick(Parts) ->
   [Part|_] = Parts,
-  Found = lists:filter(fun(Elem) -> string:str(Elem,Part) > 0 end, ets:tab2list(nicks)),
+  Found = lists:filter(fun(Elem) -> {N} = Elem, string:str(N,Part) > 0 end, ets:tab2list(nicks)),
   case Found of
     [] -> ok;
     _  -> string:join(Found,", ")
@@ -158,6 +158,7 @@ show_help() ->
    "!transferpoints <nick> <points> - transfers your points to <nick>, ",
    "!highscore - shows TOP 10, ",
    "!leavemessage <nick> <message> - leave a message for <nick>, ",
+   "!nick <part> - finds all people with <part> in their name, ",
    "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
