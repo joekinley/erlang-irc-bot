@@ -9,9 +9,11 @@
 
 init(_Args) ->
     %ets:new(points,[set,named_table]),
+    %ets:new(messages,[set,named_table]),
+    %ets:new(nicks,[set,named_table]),
     ets:file2tab("points.tab"),
-    ets:new(messages,[set,named_table]),
-    ets:new(nicks,[set,named_table]),
+    ets:file2tab("messages.tab"),
+    ets:file2tab("nicks.tab"),
     {ok, [_Args]}.
 
 
@@ -38,6 +40,7 @@ handle_event(Msg, State) ->
 
 handle_command(_Sender, Msg) ->
   ets:insert(nicks,{_Sender}),
+  ets:tab2file(nicks,"nicks.tab"),
   [Cmd|Parts] = string:tokens(Msg, " "),
   case Cmd of
     "!help" -> show_help();
@@ -135,11 +138,13 @@ leave_message(Sender, Parts) ->
                                ets:insert(messages,{Receiver,NewMessages});
     _                       -> ets:insert(messages,{Receiver,[Sender, ": ", string:join(Message," ")]})
   end,
+  ets:tab2file(messages,"messages.tab"),
   ["Left message for ",Receiver].
 
 fetch_message(Sender) ->
   case ets:lookup(messages, Sender) of
     [{Sender,Messages}|_] -> ets:delete(messages, Sender),
+                             ets:tab2file(messages,"messages.tab"),
                              Messages;
     _                     -> ok
   end.
