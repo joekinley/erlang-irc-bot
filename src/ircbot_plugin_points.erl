@@ -11,9 +11,11 @@ init(_Args) ->
     %ets:new(points,[set,named_table]),
     %ets:new(messages,[set,named_table]),
     %ets:new(nicks,[set,named_table]),
+    %ets:new(quotes,[set,named_table]).
     ets:file2tab("points.tab"),
     ets:file2tab("messages.tab"),
     ets:file2tab("nicks.tab"),
+    ets:file2tab("quotes.tab"),
     {ok, [_Args]}.
 
 
@@ -26,7 +28,6 @@ handle_event(Msg, State) ->
               _ -> Ref:privmsg(<<"#",Channel/binary>>, [Answer])
             end,
             {ok, State};
-        %showmy101!showmy101@showmy101.tmi.twitch.tv JOIN #thegypsyknight
         {in, Ref, [_Sender, _Name, <<"JOIN">>, <<"#",Channel/binary>>]} ->
           Message = fetch_message(string:to_lower(binary_to_list(_Sender))),
           case Message of
@@ -53,6 +54,8 @@ handle_command(_Sender, Msg) ->
     "!botsnack" -> botsnack(_Sender);
     "!leavemessage" -> leave_message(_Sender, Parts);
     "!nick" -> find_nick(Parts);
+    "!quoteby" -> quote_by(Parts);
+    "!addquote" -> add_quote(Parts);
     _ -> ok
   end.
 
@@ -160,6 +163,23 @@ find_nick(Parts) ->
 
 to_stringlist([]) -> [];
 to_stringlist(List) -> [{Head}|Tail] = List, [Head] ++ to_stringlist(Tail).
+
+quote_by(Parts) when length(Parts) < 1 -> ok;
+quote_by(Parts) ->
+  [Person|_] = Parts,
+  case ets:lookup(quotes, Person) of
+    [{Sender,Quotes}] -> lists:nth(random:uniform(length(Quotes)),Quotes)++[" - ", Sender];
+    _                 -> ok
+  end.
+
+add_quote(Parts) when length(Parts) < 2 -> ok;
+add_quote(Parts) ->
+  [Person|Quote] = Parts,
+  case ets:lookup(quotes, Person) of
+    []                -> ets:insert(quotes,{Person,[Quote]});
+    [{Person,Quotes}] -> ets:delete(quotes, Person),
+                         ets:insert(quotes,{Person, [Quote]++Quotes})
+  end.
 
 show_help() ->
   ["!points - shows points, ",
