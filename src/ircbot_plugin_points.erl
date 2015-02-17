@@ -105,7 +105,7 @@ remove_points(_Sender, Parts) ->
       case Current of
         []                         -> ets:insert(points,{_Nick, -string_to_num(_Points)});
         [{_Nick, CurrentPoints}|_] -> ets:delete(points,_Nick),
-                                      ets:insert(points,{_Nick, CurrentPoints-string_to_num(_Points)});
+                                      ets:insert(points,{_Nick, floor(CurrentPoints)-string_to_num(_Points)});
         _                          -> ok
       end,
       show_points(_Nick);
@@ -128,8 +128,8 @@ show_highscore() ->
   People = lists:sublist(lists:reverse(lists:keysort(2,ets:tab2list(points))),10),
   "Top 10: "++format_people(People).
 
-format_person({Name, Age}) ->
-  lists:flatten(io_lib:format("~s ~b", [Name, Age])).
+format_person({Name, Points}) ->
+  lists:flatten(io_lib:format("~s ~b", [Name, floor(Points)])).
 
 format_people(People) ->
   string:join(lists:map(fun format_person/1, People), ", ").
