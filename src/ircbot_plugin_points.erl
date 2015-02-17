@@ -186,7 +186,7 @@ add_quote(Parts) ->
 string_to_num(S) ->
   case string:to_float(S) of
     {error,no_float} -> list_to_integer(S);
-    {F,_Rest} -> F
+    {F,_Rest} -> floor(F)
   end.
 
 floor(X) when X < 0 ->
