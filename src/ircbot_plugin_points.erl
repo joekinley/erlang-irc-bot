@@ -7,6 +7,8 @@
 -define(SELF, "cassadeey").
 -define(ADMINS, ["thegypsyknight","joekinley",?SELF]).
 
+%BUG: if points are 10.2 (point values) the bot crashes
+
 init(_Args) ->
     %ets:new(points,[set,named_table]),
     %ets:new(messages,[set,named_table]),
@@ -32,7 +34,7 @@ handle_event(Msg, State) ->
           Message = fetch_message(string:to_lower(binary_to_list(_Sender))),
           case Message of
             ok -> ok;
-            _ -> Ref:privmsg(<<"#",Channel/binary>>, [Message])
+            _ -> Ref:privmsg(<<"#",Channel/binary>>, ["Messages for ",_Sender,": ", Message])
           end,
           {ok, State};
         _ ->
@@ -84,9 +86,9 @@ add_points(_Sender, Parts) ->
     true ->
       Current = ets:lookup(points,_Nick),
       case Current of
-        []                         -> ets:insert(points,{_Nick, list_to_integer(_Points)});
+        []                         -> ets:insert(points,{_Nick, string_to_num(_Points)});
         [{_Nick, CurrentPoints}|_] -> ets:delete(points,_Nick),
-                                      ets:insert(points,{_Nick, CurrentPoints+list_to_integer(_Points)});
+                                      ets:insert(points,{_Nick, CurrentPoints+string_to_num(_Points)});
         _                          -> ok
       end,
       show_points(_Nick);
@@ -101,9 +103,9 @@ remove_points(_Sender, Parts) ->
     true ->
       Current = ets:lookup(points,_Nick),
       case Current of
-        []                         -> ets:insert(points,{_Nick, -list_to_integer(_Points)});
+        []                         -> ets:insert(points,{_Nick, -string_to_num(_Points)});
         [{_Nick, CurrentPoints}|_] -> ets:delete(points,_Nick),
-                                      ets:insert(points,{_Nick, CurrentPoints-list_to_integer(_Points)});
+                                      ets:insert(points,{_Nick, CurrentPoints-string_to_num(_Points)});
         _                          -> ok
       end,
       show_points(_Nick);
@@ -113,7 +115,7 @@ remove_points(_Sender, Parts) ->
 transfer_points(_Sender, Parts) when length(Parts) < 2 -> ok;
 transfer_points(_Sender, Parts) ->
   [_Receiver|[_Points|_]] = Parts,
-  IPoints = list_to_integer(_Points),
+  IPoints = string_to_num(_Points),
   case ets:lookup(points, _Sender) of
     [{_Sender, NPoints}|_] when NPoints >= IPoints, IPoints > 0 -> remove_points(?SELF,[_Sender,_Points]),
                                                                    add_points(?SELF,[_Receiver,_Points]);
@@ -181,6 +183,12 @@ add_quote(Parts) ->
                          ets:insert(quotes,{Person, [Quote]++Quotes})
   end.
 
+string_to_num(S) ->
+  case string:to_float(S) of
+    {error,no_float} -> list_to_integer(S);
+    {F,_Rest} -> F
+  end.
+
 show_help() ->
   ["!points - shows points, ",
    "!transferpoints <nick> <points> - transfers your points to <nick>, ",
@@ -188,7 +196,7 @@ show_help() ->
    "!leavemessage <nick> <message> - leave a message for <nick>, ",
    "!nick <part> - finds all people with <part> in their name, ",
    "!quoteby <nick> - shows a random quote by <person>, ",
-   "!addquite <nick> <quote> - adds the quote, ",
+   "!addquote <nick> <quote> - adds the quote, ",
    "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
