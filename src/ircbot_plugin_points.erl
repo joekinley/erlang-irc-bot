@@ -65,7 +65,7 @@ show_points(_Sender) ->
   Entry = ets:lookup(points, _Sender),
   case Entry of
     [] -> _Sender++" has no points yet :(";
-    [{_Sender, Points}|_] -> ets:tab2file(points, "points.tab"), string:join([_Sender,"has",float_to_list(Points),"points"]," ");
+    [{_Sender, Points}|_] -> ets:tab2file(points, "points.tab"), string:join([_Sender,"has",floor(float_to_list(Points)),"points"]," ");
     _ -> ok
   end.
 
@@ -188,6 +188,15 @@ string_to_num(S) ->
     {error,no_float} -> list_to_integer(S);
     {F,_Rest} -> F
   end.
+
+floor(X) when X < 0 ->
+    T = trunc(X),
+    case X - T == 0 of
+        true -> T;
+        false -> T - 1
+    end;
+floor(X) ->
+    trunc(X).
 
 show_help() ->
   ["!points - shows points, ",
