@@ -181,7 +181,8 @@ add_quote(Parts) ->
     []                -> ets:insert(quotes,{Person,[Quote]});
     [{Person,Quotes}] -> ets:delete(quotes, Person),
                          ets:insert(quotes,{Person, [Quote]++Quotes})
-  end.
+  end,
+  ok.
 
 string_to_num(S) ->
   case string:to_float(S) of
