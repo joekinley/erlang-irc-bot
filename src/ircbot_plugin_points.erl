@@ -65,7 +65,7 @@ show_points(_Sender) ->
   Entry = ets:lookup(points, _Sender),
   case Entry of
     [] -> _Sender++" has no points yet :(";
-    [{_Sender, Points}|_] -> ets:tab2file(points, "points.tab"), string:join([_Sender,"has",float_to_list(floor(Points)),"points"]," ");
+    [{_Sender, Points}|_] -> ets:tab2file(points, "points.tab"), string:join([_Sender,"has",integer_to_list(floor(Points)),"points"]," ");
     _ -> ok
   end.
 
