@@ -178,9 +178,9 @@ add_quote(Parts) when length(Parts) < 2 -> ok;
 add_quote(Parts) ->
   [Person|Quote] = Parts,
   case ets:lookup(quotes, Person) of
-    []                -> ets:insert(quotes,{Person,[Quote]});
+    []                -> ets:insert(quotes,{Person,[string:join(Quote, " ")]});
     [{Person,Quotes}] -> ets:delete(quotes, Person),
-                         ets:insert(quotes,{Person, [Quote]++Quotes})
+                         ets:insert(quotes,{Person, [string:join(Quote, " ")]++Quotes})
   end,
   ok.
 
