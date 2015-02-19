@@ -197,9 +197,20 @@ start_poll(Sender, Parts) ->
 show_poll() ->
   case ets:lookup(misc_dynamic, poll) of
     []                                     -> ok;
-    [{poll, {_Sender, Question, Answers}}] -> Question++" Please vote "++io_lib:format("~p~n", [Answers]);
+    [{poll, {_Sender, Question, Answers}}] -> "Current poll: "++Question++" - Please vote !poll <number> for "++format_answers(Answers);
     _                                      -> "Please help me!"
   end.
+
+format_answers(Answers)      -> format_answers(Answers, 1).
+
+format_answers([], _)        -> "";
+format_answers(Answers, Num) ->
+  [Current|Rest] = Answers,
+  case Num of
+    1 -> io_lib:format("~b) ~s", [Num, Current])++format_answers(Num+1, Rest);
+    _ -> io_lib:format("; ~b) ~s", [Num, Current])++format_answers(Num+1, Rest)
+  end.
+
 
 string_to_num(S) ->
   case string:to_float(S) of
