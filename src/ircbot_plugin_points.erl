@@ -206,6 +206,7 @@ format_answers(Answers)      -> format_answers(Answers, 1).
 format_answers([], _)        -> "";
 format_answers(Answers, Num) ->
   [Current|Rest] = Answers,
+  io:format("~p~n~p~n~p~n", [Answers, Current, Rest]),
   case Num of
     1 -> io_lib:format("~b) ~s", [Num, Current])++format_answers(Num+1, Rest);
     _ -> io_lib:format("; ~b) ~s", [Num, Current])++format_answers(Num+1, Rest)
