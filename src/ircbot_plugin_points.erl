@@ -190,9 +190,14 @@ start_poll(Sender, Parts) ->
     [] -> [Question|[T]] = string:tokens(string:join(Parts, " "),"|"),
           Answers = string:tokens(T, ","),
           ets:insert(misc_dynamic, {poll, {Sender, [Question], Answers}}),
-          %"New poll started",
-          io_lib:format("~p~n", [ets:tab2list(misc_dynamic)]);
+          show_poll();
     _  -> "There is still an unfinished poll"
+  end.
+
+show_poll() ->
+  case ets:lookup(misc_dynamic, poll) of
+    []                                  -> ok;
+    {poll, {_Sender, Question, Answers}} -> [Question," Please vote", io_lib:format("~p~n", [Answers])]
   end.
 
 string_to_num(S) ->
