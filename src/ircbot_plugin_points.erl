@@ -197,8 +197,8 @@ start_poll(Sender, Parts) ->
 show_poll() ->
   case ets:lookup(misc_dynamic, poll) of
     []                                   -> ok;
-    {poll, {_Sender, Question, Answers}} -> [Question]++[" Please vote "]++io_lib:format("~p~n", [Answers]);
-    _                                    -> "Apparently you did something wrong"
+    {poll, {_Sender, Question, Answers}} -> Question++" Please vote "++io_lib:format("~p~n", [Answers]);
+    _                                    -> "Gotta learn some pattern matching, fella"
   end.
 
 string_to_num(S) ->
