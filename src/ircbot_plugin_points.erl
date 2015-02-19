@@ -190,7 +190,8 @@ start_poll(Sender, Parts) ->
     [] -> [Question|_T] = string:tokens(string:join(Parts, " "),"|"),
           Answers = string:tokens(_T, ","),
           ets:insert(misc_dynamic, {poll, {Sender, [Question], Answers}}),
-          "New poll started";
+          %"New poll started",
+          io_lib:format("~p~n", [ets:tab2list(misc_dynamic)]);
     _  -> "There is still an unfinished poll"
   end.
 
