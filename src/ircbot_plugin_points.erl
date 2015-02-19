@@ -204,14 +204,8 @@ show_poll() ->
 format_answers(Answers)      -> format_answers(Answers, 1).
 
 format_answers([], _)        -> "";
-format_answers(Answers, Num) ->
-  [Current|Rest] = Answers,
-  io:format("~p~n~p~n~p~n", [Answers, Current, Rest]),
-  case Num of
-    1 -> io_lib:format("~b) ~s", [Num, Current])++format_answers(Num+1, Rest);
-    _ -> io_lib:format("; ~b) ~s", [Num, Current])++format_answers(Num+1, Rest)
-  end.
-
+format_answers(Answers, Num) when Num == 1 -> [Current|Rest] = Answers, io_lib:format("~b) ~s", [Num, Current])++format_answers(Rest, Num+1);
+format_answers(Answers, Num)               -> [Current|Rest] = Answers, io_lib:format("; ~b) ~s", [Num, Current])++format_answers(Rest, Num+1).
 
 string_to_num(S) ->
   case string:to_float(S) of
