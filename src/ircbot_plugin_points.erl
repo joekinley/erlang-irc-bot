@@ -198,7 +198,7 @@ show_poll() ->
   case ets:lookup(misc_dynamic, poll) of
     []                                   -> ok;
     {poll, {_Sender, Question, Answers}} -> Question++" Please vote "++io_lib:format("~p~n", [Answers]);
-    _                                    -> "Gotta learn some pattern matching, fella"
+    Here                                 -> io_lib:format("~p~n", [Here])
   end.
 
 string_to_num(S) ->
