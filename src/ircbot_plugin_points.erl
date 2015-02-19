@@ -196,9 +196,9 @@ start_poll(Sender, Parts) ->
 
 show_poll() ->
   case ets:lookup(misc_dynamic, poll) of
-    []                                   -> ok;
-    {poll, {_Sender, Question, Answers}} -> Question++" Please vote "++io_lib:format("~p~n", [Answers]);
-    Here                                 -> io_lib:format("~p~n", [Here])
+    []                                     -> ok;
+    [{poll, {_Sender, Question, Answers}}] -> Question++" Please vote "++io_lib:format("~p~n", [Answers]);
+    _                                      -> "Please help me!"
   end.
 
 string_to_num(S) ->
