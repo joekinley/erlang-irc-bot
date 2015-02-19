@@ -7,13 +7,12 @@
 -define(SELF, "cassadeey").
 -define(ADMINS, ["thegypsyknight","joekinley",?SELF]).
 
-%BUG: if points are 10.2 (point values) the bot crashes
-
 init(_Args) ->
     %ets:new(points,[set,named_table]),
     %ets:new(messages,[set,named_table]),
     %ets:new(nicks,[set,named_table]),
     %ets:new(quotes,[set,named_table]).
+    ets:new(misc_dynamic,[set,named_table]), % miscellaneous table for dynamic stuff (that might be lost on restart)
     ets:file2tab("points.tab"),
     ets:file2tab("messages.tab"),
     ets:file2tab("nicks.tab"),
@@ -58,6 +57,7 @@ handle_command(_Sender, Msg) ->
     "!nick" -> find_nick(Parts);
     "!quoteby" -> quote_by(Parts);
     "!addquote" -> add_quote(Parts);
+    "!startpoll" -> start_poll(_Sender, Parts);
     _ -> ok
   end.
 
@@ -182,7 +182,17 @@ add_quote(Parts) ->
     [{Person,Quotes}] -> ets:delete(quotes, Person),
                          ets:insert(quotes,{Person, [string:join(Quote, " ")]++Quotes})
   end,
-  ok.
+  "Quote saved".
+
+start_poll(_Sender, Parts) when length(Parts) < 3 -> ok;
+start_poll(Sender, Parts) ->
+  case ets:lookup(misc_dynamic, poll) of
+    [] -> [Question|_T] = string:tokens(string:join(Parts, " "),"|"),
+          Answers = string:tokens(_T, ","),
+          ets:insert(misc_dynamic, {poll, {Sender, [Question], Answers}}),
+          "New poll started";
+    _  -> "There is still an unfinished poll"
+  end.
 
 string_to_num(S) ->
   case string:to_float(S) of
