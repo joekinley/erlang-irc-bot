@@ -58,6 +58,7 @@ handle_command(_Sender, Msg) ->
     "!quoteby" -> quote_by(Parts);
     "!addquote" -> add_quote(Parts);
     "!startpoll" -> start_poll(_Sender, Parts);
+    "!showpoll" -> show_poll();
     _ -> ok
   end.
 
@@ -197,12 +198,11 @@ start_poll(Sender, Parts) ->
 show_poll() ->
   case ets:lookup(misc_dynamic, poll) of
     []                                     -> ok;
-    [{poll, {_Sender, Question, Answers}}] -> "Current poll: "++Question++" - Please vote !poll <number> for "++format_answers(Answers);
+    [{poll, {_Sender, Question, Answers}}] -> "Current poll: "++Question++" - Please vote with !poll <number> for "++format_answers(Answers);
     _                                      -> "Please help me!"
   end.
 
 format_answers(Answers)      -> format_answers(Answers, 1).
-
 format_answers([], _)        -> "";
 format_answers(Answers, Num) when Num == 1 -> [Current|Rest] = Answers, io_lib:format("~b) ~s", [Num, Current])++format_answers(Rest, Num+1);
 format_answers(Answers, Num)               -> [Current|Rest] = Answers, io_lib:format("; ~b) ~s", [Num, Current])++format_answers(Rest, Num+1).
