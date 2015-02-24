@@ -217,7 +217,7 @@ vote(Sender, [No|_]) ->
     [{poll, {_,_,Answers}}] ->
       io:format("~p~n~p~n", [length(Answers),INo]),
       if length(Answers) < INo -> ok;
-         true                  -> io:format("~p~n", [ets:insert(votes, {Sender, INo})])
+         true                  -> ets:insert(votes, {Sender, INo})
        end
   end,
   ok.
