@@ -214,7 +214,7 @@ end_poll(Sender) ->
   case lists:member(Sender, ?ADMINS) of
     true ->
       case ets:lookup(misc_dynamic, poll) of
-        [{poll, {_Sender, Question, Answers}}] -> get_highest_answer(Answers, ets:tab2list(votes));
+        [{poll, {_Sender, Question, Answers}}] -> Question++" -> "++get_highest_answer(Answers, ets:tab2list(votes));
         _                                     -> ok
       end;
     _ -> ok
