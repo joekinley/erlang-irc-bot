@@ -59,6 +59,7 @@ handle_command(_Sender, Msg) ->
     "!quoteby" -> quote_by(Parts);
     "!addquote" -> add_quote(Parts);
     "!startpoll" -> start_poll(_Sender, Parts);
+    "!endpoll" -> end_poll(_Sender);
     "!showpoll" -> show_poll();
     "!vote" -> vote(_Sender, Parts);
     _ -> ok
@@ -208,6 +209,22 @@ show_poll() ->
     [{poll, {_Sender, Question, Answers}}] -> "Current poll: "++Question++" - Please vote with !vote <number> for "++format_answers(Answers);
     _                                      -> "Please help me!"
   end.
+
+end_poll(Sender) ->
+  case lists:member(Sender, ?ADMINS) of
+    true ->
+      case ets:lookup(misc_dynamic, poll) of
+        [{poll, {_Sender, Question, Answers}}] -> get_highest_answer(Answers, ets:tab2list(votes));
+        _                                     -> ok
+      end;
+    _ -> ok
+  end.
+
+get_highest_answer(Answers, Votes) ->
+  Zipped = lists:zip(Answers,lists:seq(1,length(Answers))),
+  Final = lists:map(fun({Q,No}) -> {Q, length(lists:filter(fun({Q,NoI}) -> case NoI of No -> true; _ -> false end end, ets:tab2list(votes)))} end, Zipped),
+  [{Winner, TotalVotes}] = lists:sublist(lists:reverse(lists:keysort(2,Final)),1),
+  Winner++" won by total of "++integer_to_list(TotalVotes)++" Votes".
 
 vote(_Sender, Parts) when length(Parts) < 1 -> ok;
 vote(Sender, [No|_]) ->
