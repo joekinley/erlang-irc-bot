@@ -222,7 +222,7 @@ end_poll(Sender) ->
 
 get_highest_answer(Answers, Votes) ->
   Zipped = lists:zip(Answers,lists:seq(1,length(Answers))),
-  Final = lists:map(fun({Q,No}) -> {Q, length(lists:filter(fun({Q,NoI}) -> case NoI of No -> true; _ -> false end end, Votes))} end, Zipped),
+  Final = lists:map(fun({Q,No}) -> {Q, length(lists:filter(fun({_,NoI}) -> case NoI of No -> true; _ -> false end end, Votes))} end, Zipped),
   [{Winner, TotalVotes}] = lists:sublist(lists:reverse(lists:keysort(2,Final)),1),
   Winner++" won by total of "++integer_to_list(TotalVotes)++" Votes".
 
