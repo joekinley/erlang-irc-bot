@@ -13,6 +13,7 @@ init(_Args) ->
     %ets:new(nicks,[set,named_table]),
     %ets:new(quotes,[set,named_table]).
     ets:new(misc_dynamic,[set,named_table]), % miscellaneous table for dynamic stuff (that might be lost on restart)
+    ets:new(votes,[set, named_table]),
     ets:file2tab("points.tab"),
     ets:file2tab("messages.tab"),
     ets:file2tab("nicks.tab"),
@@ -59,6 +60,7 @@ handle_command(_Sender, Msg) ->
     "!addquote" -> add_quote(Parts);
     "!startpoll" -> start_poll(_Sender, Parts);
     "!showpoll" -> show_poll();
+    "!vote" -> vote(_Sender, Parts);
     _ -> ok
   end.
 
@@ -97,8 +99,8 @@ add_points(_Sender, Parts) ->
   end.
 
 remove_points(_Sender, Parts) when length(Parts) < 2 -> ok;
-remove_points(_Sender, Parts) ->
-  IsAdmin = lists:member(_Sender, ?ADMINS),
+remove_points(Sender, Parts) ->
+  IsAdmin = lists:member(Sender, ?ADMINS),
   [_Nick|[_Points|_]] = Parts,
   case IsAdmin of
     true ->
@@ -183,23 +185,38 @@ add_quote(Parts) ->
     [{Person,Quotes}] -> ets:delete(quotes, Person),
                          ets:insert(quotes,{Person, [string:join(Quote, " ")]++Quotes})
   end,
+  ets:tab2file(quotes,"quotes.tab"),
   "Quote saved".
 
 start_poll(_Sender, Parts) when length(Parts) < 3 -> ok;
 start_poll(Sender, Parts) ->
-  case ets:lookup(misc_dynamic, poll) of
-    [] -> [Question|[T]] = string:tokens(string:join(Parts, " "),"|"),
-          Answers = string:tokens(T, ","),
-          ets:insert(misc_dynamic, {poll, {Sender, [Question], Answers}}),
-          show_poll();
-    _  -> "There is still an unfinished poll"
+  case lists:member(Sender, ?ADMINS) of
+    true ->
+      case ets:lookup(misc_dynamic, poll) of
+        [] -> [Question|[T]] = string:tokens(string:join(Parts, " "),"|"),
+              Answers = string:tokens(T, ","),
+              ets:insert(misc_dynamic, {poll, {Sender, [Question], Answers}}),
+              show_poll();
+        _  -> "There is still an unfinished poll"
+      end;
+    _ -> ok
   end.
 
 show_poll() ->
   case ets:lookup(misc_dynamic, poll) of
     []                                     -> ok;
-    [{poll, {_Sender, Question, Answers}}] -> "Current poll: "++Question++" - Please vote with !poll <number> for "++format_answers(Answers);
+    [{poll, {_Sender, Question, Answers}}] -> "Current poll: "++Question++" - Please vote with !vote <number> for "++format_answers(Answers);
     _                                      -> "Please help me!"
+  end.
+
+vote(_Sender, Parts) when length(Parts) < 1 -> ok;
+vote(Sender, [No|_]) ->
+  case ets:lookup(misc_dynamic, poll) of
+    []  -> ok;
+    [{poll, {_,_,Answers}}] ->
+      if length(Answers) < No -> ok;
+         true                 -> ets:insert(votes, {Sender, No})
+       end
   end.
 
 format_answers(Answers)      -> format_answers(Answers, 1).
