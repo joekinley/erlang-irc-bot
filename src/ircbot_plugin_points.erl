@@ -216,9 +216,10 @@ vote(Sender, [No|_]) ->
     []  -> ok;
     [{poll, {_,_,Answers}}] ->
       if length(Answers) < INo -> ok;
-         true                                -> ets:insert(votes, {Sender, INo})
+         true                  -> ets:insert(votes, {Sender, INo})
        end
-  end.
+  end,
+  ok.
 
 format_answers(Answers)      -> format_answers(Answers, 1).
 format_answers([], _)        -> "";
