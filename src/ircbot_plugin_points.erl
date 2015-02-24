@@ -211,6 +211,7 @@ show_poll() ->
 
 vote(_Sender, Parts) when length(Parts) < 1 -> ok;
 vote(Sender, [No|_]) ->
+  io:format("~p~n", [No]),
   case ets:lookup(misc_dynamic, poll) of
     []  -> ok;
     [{poll, {_,_,Answers}}] ->
