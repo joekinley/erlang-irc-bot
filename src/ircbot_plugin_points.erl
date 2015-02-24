@@ -211,12 +211,12 @@ show_poll() ->
 
 vote(_Sender, Parts) when length(Parts) < 1 -> ok;
 vote(Sender, [No|_]) ->
-  io:format("~p~n", [No]),
+  INo = string_to_num(No),
   case ets:lookup(misc_dynamic, poll) of
     []  -> ok;
     [{poll, {_,_,Answers}}] ->
-      if length(Answers) < No -> ok;
-         true                 -> ets:insert(votes, {Sender, No})
+      if length(Answers) < INo -> ok;
+         true                                -> ets:insert(votes, {Sender, INo})
        end
   end.
 
