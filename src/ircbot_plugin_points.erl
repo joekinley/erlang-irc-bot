@@ -306,6 +306,7 @@ show_help() ->
    "!addquote <nick> <quote> - adds the quote, ",
    "!showpoll - shows current poll if there is any, ",
    "!donate <amount> - donates <amount> to the Robin Hood Charity Initiative, ",
+   "!topdonors - shows top 5 donors, ",
    "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
