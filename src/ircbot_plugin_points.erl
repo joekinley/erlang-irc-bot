@@ -67,6 +67,7 @@ handle_command(_Sender, Msg) ->
     "!vote" -> vote(_Sender, Parts);
     "!charity" -> charity(_Sender, Parts);
     "!donate" -> donate(_Sender, Parts);
+    "!topdonors" -> topdonors();
     _ -> ok
   end.
 
@@ -136,6 +137,10 @@ botsnack(_Sender) -> ["<3 ", _Sender].
 show_highscore() ->
   People = lists:sublist(lists:reverse(lists:keysort(2,ets:tab2list(points))),10),
   "Top 10: "++format_people(People).
+
+topdonors() ->
+  People = lists:sublist(lists:reverse(lists:keysort(2,ets:tab2list(donors))),5),
+  "The Robin Hood Charity Initiative thanks it's top 5 donors: "++format_people(People).
 
 format_person({Name, Points}) ->
   lists:flatten(io_lib:format("~s ~b", [Name, floor(Points)])).
@@ -258,7 +263,7 @@ charity(Sender, [Receiver|_]) ->
 donate(_Sender, Parts) when length(Parts) < 1 -> ok;
 donate(Sender,[Amount|_]) ->
   case transfer_points(Sender, ["cassadeey",Amount]) of
-    ok -> io:format("transferpoints no workey\n",[]), ok;
+    ok -> ok;
     _  -> case ets:lookup(donors,Sender) of
             [{Sender,TotalAmount}] -> ets:insert(donors,{Sender,TotalAmount+string_to_num(Amount)});
             _                      -> ets:insert(donors,{Sender,string_to_num(Amount)})
