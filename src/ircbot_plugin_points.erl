@@ -233,7 +233,7 @@ vote(Sender, [No|_]) ->
   case ets:lookup(misc_dynamic, poll) of
     []  -> ok;
     [{poll, {_,_,Answers}}] ->
-      if length(Answers) < INo -> ok;
+      if length(Answers) < INo, INo > 0 -> ok;
          true                  -> ets:insert(votes, {Sender, INo})
        end
   end,
