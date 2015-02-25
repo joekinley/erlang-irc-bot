@@ -250,7 +250,7 @@ string_to_num(S) ->
       {error,no_float} -> list_to_integer(S);
       {F,_Rest} -> floor(F)
     end
-  catch _ ->
+  catch error:badarg ->
     0
   end.
 
