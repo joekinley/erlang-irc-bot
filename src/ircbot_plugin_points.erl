@@ -255,12 +255,13 @@ charity(Sender, [Receiver|_]) ->
 donate(_Sender, Parts) when length(Parts) < 1 -> ok;
 donate(Sender,[Amount|_]) ->
   case transfer_points(Sender, ["cassadeey",Amount]) of
-    ok -> ok;
+    ok -> io:format("transferpoints no workey\n",[]), ok;
     _  -> case ets:lookup(donors,Sender) of
-            [{Sender,TotalAmount}] -> ets:insert(donors,{Sender,TotalAmount+string_to_num(Amount)}),
-                                      "The Robin Hood Charity Initiative thanks "++Sender++" for donating for a noble cause";
-            _                      -> ok
-          end
+            [{Sender,TotalAmount}] -> ets:insert(donors,{Sender,TotalAmount+string_to_num(Amount)});
+            _                      -> ets:insert(donors,{Sender,string_to_num(Amount)})
+          end,
+          ets:tab2file(donors,"donors.tab"),
+          "The Robin Hood Charity Initiative thanks "++Sender++" for donating for a noble cause"
   end.
 
 format_answers(Answers)      -> format_answers(Answers, 1).
