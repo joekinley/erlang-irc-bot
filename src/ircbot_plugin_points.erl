@@ -247,8 +247,11 @@ vote(Sender, [No|_]) ->
 charity(_Sender, Parts) when length(Parts) < 1 -> ok;
 charity(Sender, [Receiver|_]) ->
   case lists:member(Sender, ?ADMINS) of
-    true -> transfer_points(Sender,[Receiver,?DONATION]),
-            Receiver++" got a donation in the name of the Robin Hood Charity Initiative";
+    true ->
+      case transfer_points("cassadeey",[Receiver,?DONATION]) of
+        ok -> ok;
+        _  -> Receiver++" got a donation in the name of the Robin Hood Charity Initiative"
+      end;
     _    -> ok
   end.
 
