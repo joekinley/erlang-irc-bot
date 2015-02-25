@@ -297,6 +297,7 @@ show_help() ->
    "!quoteby <nick> - shows a random quote by <person>, ",
    "!addquote <nick> <quote> - adds the quote, ",
    "!showpoll - shows current poll if there is any, ",
+   "!donate <amount> - donates <amount> to the Robin Hood Charity Initiative, ",
    "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
