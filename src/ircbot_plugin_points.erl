@@ -245,9 +245,13 @@ format_answers(Answers, Num) when Num == 1 -> [Current|Rest] = Answers, io_lib:f
 format_answers(Answers, Num)               -> [Current|Rest] = Answers, io_lib:format("; ~b) ~s", [Num, Current])++format_answers(Rest, Num+1).
 
 string_to_num(S) ->
-  case string:to_float(S) of
-    {error,no_float} -> list_to_integer(S);
-    {F,_Rest} -> floor(F)
+  try
+    case string:to_float(S) of
+      {error,no_float} -> list_to_integer(S);
+      {F,_Rest} -> floor(F)
+    end
+  catch _ ->
+    0
   end.
 
 floor(X) when X < 0 ->
