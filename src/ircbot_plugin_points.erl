@@ -6,18 +6,21 @@
 
 -define(SELF, "cassadeey").
 -define(ADMINS, ["thegypsyknight","joekinley",?SELF]).
+-define(DONATION,"1").
 
 init(_Args) ->
     %ets:new(points,[set,named_table]),
     %ets:new(messages,[set,named_table]),
     %ets:new(nicks,[set,named_table]),
     %ets:new(quotes,[set,named_table]).
+    %ets:new(donors,[set,named_table]).
     ets:new(misc_dynamic,[set,named_table]), % miscellaneous table for dynamic stuff (that might be lost on restart)
     ets:new(votes,[set, named_table]),
     ets:file2tab("points.tab"),
     ets:file2tab("messages.tab"),
     ets:file2tab("nicks.tab"),
     ets:file2tab("quotes.tab"),
+    ets:file2tab("donors.tab"),
     {ok, [_Args]}.
 
 
@@ -62,6 +65,8 @@ handle_command(_Sender, Msg) ->
     "!endpoll" -> end_poll(_Sender);
     "!showpoll" -> show_poll();
     "!vote" -> vote(_Sender, Parts);
+    "!charity" -> charity(_Sender, Parts);
+    "!donate" -> donate(_Sender, Parts);
     _ -> ok
   end.
 
@@ -224,8 +229,8 @@ get_highest_answer(Answers, Votes) ->
   ets:delete(misc_dynamic,poll),
   Zipped = lists:zip(Answers,lists:seq(1,length(Answers))),
   Final = lists:map(fun({Q,No}) -> {Q, length(lists:filter(fun({_,NoI}) -> case NoI of No -> true; _ -> false end end, Votes))} end, Zipped),
-  [{Winner, TotalVotes}] = lists:sublist(lists:reverse(lists:keysort(2,Final)),1),
-  Winner++" won by total of "++integer_to_list(TotalVotes)++" Votes".
+  [{Winner, TotalVotes}, {Second, SecondVotes}] = lists:sublist(lists:reverse(lists:keysort(2,Final)),2),
+  Winner++" won by total of "++integer_to_list(TotalVotes)++" Votes, with "++Second++" coming second at "++integer_to_list(SecondVotes)++" votes".
 
 vote(_Sender, Parts) when length(Parts) < 1 -> ok;
 vote(Sender, [No|_]) ->
@@ -238,6 +243,25 @@ vote(Sender, [No|_]) ->
        end
   end,
   ok.
+
+charity(_Sender, Parts) when length(Parts) < 1 -> ok;
+charity(Sender, [Receiver|_]) ->
+  case lists:member(Sender, ?ADMINS) of
+    true -> transfer_points(Sender,[Receiver,?DONATION]),
+            Receiver++" got a donation in the name of the Robin Hood Charity Initiative";
+    _    -> ok
+  end.
+
+donate(_Sender, Parts) when length(Parts) < 1 -> ok;
+donate(Sender,[Amount|_]) ->
+  case transfer_points(Sender, ["cassadeey",Amount]) of
+    ok -> ok;
+    _  -> case ets:lookup(donors,Sender) of
+            [{Sender,TotalAmount}] -> ets:insert(donors,{Sender,TotalAmount+string_to_num(Amount)}),
+                                      "The Robin Hood Charity Initiative thanks "++Sender++" for donating for a noble cause";
+            _                      -> ok
+          end
+  end.
 
 format_answers(Answers)      -> format_answers(Answers, 1).
 format_answers([], _)        -> "";
@@ -271,6 +295,7 @@ show_help() ->
    "!nick <part> - finds all people with <part> in their name, ",
    "!quoteby <nick> - shows a random quote by <person>, ",
    "!addquote <nick> <quote> - adds the quote, ",
+   "!showpoll - shows current poll if there is any, ",
    "!botsnack - yummy"].
 
 handle_call(_Request, State) -> {ok, ok, State}.
