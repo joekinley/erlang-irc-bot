@@ -27,7 +27,8 @@ init(_Args) ->
 handle_event(Msg, State) ->
     case Msg of
         {in, Ref, [_Sender, _Name, <<"PRIVMSG">>, <<"#",Channel/binary>>, What]} ->
-            Answer = handle_command(string:to_lower(binary_to_list(_Sender)), string:to_lower(binary_to_list(What))),
+            io:format("~p~n",[Ref]),
+            Answer = handle_command(string:to_lower(binary_to_list(_Sender)), string:to_lower(binary_to_list(What)), Ref),
             case Answer of
               ok -> ok;
               _ -> Ref:privmsg(<<"#",Channel/binary>>, [Answer])
@@ -44,7 +45,7 @@ handle_event(Msg, State) ->
             {ok, State}
     end.
 
-handle_command(_Sender, Msg) ->
+handle_command(_Sender, Msg, Ref) ->
   ets:insert(nicks,{_Sender}),
   ets:tab2file(nicks,"nicks.tab"),
   [Cmd|Parts] = string:tokens(Msg, " "),
@@ -68,6 +69,7 @@ handle_command(_Sender, Msg) ->
     "!charity" -> charity(_Sender, Parts);
     "!donate" -> donate(_Sender, Parts);
     "!topdonors" -> topdonors();
+    "!raid" -> raid(_Sender, Parts, Ref);
     _ -> ok
   end.
 
@@ -253,7 +255,7 @@ charity(_Sender, Parts) when length(Parts) < 1 -> ok;
 charity(Sender, [Receiver|_]) ->
   case lists:member(Sender, ?ADMINS) of
     true ->
-      case transfer_points("cassadeey",[Receiver,?DONATION]) of
+      case transfer_points(?SELF,[Receiver,?DONATION]) of
         ok -> ok;
         _  -> Receiver++" got a donation in the name of the Robin Hood Charity Initiative"
       end;
@@ -262,7 +264,7 @@ charity(Sender, [Receiver|_]) ->
 
 donate(_Sender, Parts) when length(Parts) < 1 -> ok;
 donate(Sender,[Amount|_]) ->
-  case transfer_points(Sender, ["cassadeey",Amount]) of
+  case transfer_points(Sender, [?SELF,Amount]) of
     ok -> ok;
     _  -> case ets:lookup(donors,Sender) of
             [{Sender,TotalAmount}] -> ets:insert(donors,{Sender,TotalAmount+string_to_num(Amount)});
@@ -270,6 +272,13 @@ donate(Sender,[Amount|_]) ->
           end,
           ets:tab2file(donors,"donors.tab"),
           "The Robin Hood Charity Initiative thanks "++Sender++" for donating for a noble cause"
+  end.
+
+raid(_Sender, Parts, _Ref) when length(Parts < 2) -> ok;
+raid(Sender, [Channel|Parts], Ref) ->
+  case lists:member(Sender, ?ADMINS) of
+    true -> ok;
+    _    -> ok
   end.
 
 format_answers(Answers)      -> format_answers(Answers, 1).
